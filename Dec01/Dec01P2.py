@@ -20,33 +20,24 @@ for line in file:
     largestIndex = -1
     largestIndexValue = 0
     for key in mapNameToNum.keys():
-        index = 0
-        try:
-            index = line.index(key)
-        except ValueError:
-            continue
-        if index < smallestIndex:
+        index = line.find(key)
+        if index != -1 and index < smallestIndex:
             smallestIndex = index
             smallestIndexValue = mapNameToNum[key]
 
-    for key in mapNameToNum.keys():
         index = line.rfind(key)
         if index > largestIndex:
             largestIndex = index
             largestIndexValue = mapNameToNum[key]
 
     for value in mapNameToNum.values():
-        index = 0
-        try:
-            index = line.index(str(value))
-        except ValueError:
-            continue
-        if index < smallestIndex:
+        valueString = str(value)
+        index = line.find(valueString)
+        if index != -1 and index < smallestIndex:
             smallestIndex = index
             smallestIndexValue = value
 
-    for value in mapNameToNum.values():
-        index = line.rfind(str(value))
+        index = line.rfind(valueString)
         if index > largestIndex:
             largestIndex = index
             largestIndexValue = value
