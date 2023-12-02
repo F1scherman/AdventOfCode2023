@@ -3,7 +3,7 @@ import helper
 
 file = open("challenge_text.txt", "r")
 
-sum_game = 0
+rolling_sum = 0
 
 for line in file:
     id_list = line.split(":")
@@ -24,10 +24,8 @@ for line in file:
 
         if red_location != -1:
             red_count = helper.extract_int(game_round[red_location-3:red_location])
-
         if blue_location != -1:
             blue_count = helper.extract_int(game_round[blue_location-3:blue_location])
-
         if green_location != -1:
             green_count = helper.extract_int(game_round[green_location-3:green_location])
 
@@ -38,8 +36,8 @@ for line in file:
         if green_count > green_minimum:
             green_minimum = green_count
 
-    sum_game += red_minimum * blue_minimum * green_minimum
+    rolling_sum += red_minimum * blue_minimum * green_minimum
 
-print(sum_game)
+print(rolling_sum)
 
 file.close()
