@@ -1,4 +1,5 @@
 # Brayden Jonsson, 2023
+import helper
 
 file = open("challenge_text.txt", "r")
 
@@ -22,22 +23,13 @@ for line in file:
         green_count = 0
 
         if red_location != -1:
-            i = red_location - 2
-            while game_round[i].isdigit():
-                i -= 1
-            red_count = int(game_round[i + 1:red_location - 1])
+            red_count = helper.extract_int(game_round[red_location-3:red_location])
 
         if blue_location != -1:
-            i = blue_location - 2
-            while game_round[i].isdigit():
-                i -= 1
-            blue_count = int(game_round[i + 1:blue_location - 1])
+            blue_count = helper.extract_int(game_round[blue_location-3:blue_location])
 
         if green_location != -1:
-            i = green_location - 2
-            while game_round[i].isdigit():
-                i -= 1
-            green_count = int(game_round[i + 1:green_location - 1])
+            green_count = helper.extract_int(game_round[green_location-3:green_location])
 
         if red_count > red_minimum:
             red_minimum = red_count
