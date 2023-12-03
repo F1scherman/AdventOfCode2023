@@ -3,6 +3,31 @@ def extract_int(string: str):
     return int(''.join(filter(lambda a: a.isdigit(), string)))
 
 
+def extract_int_at_location(string: str, location:int):
+    """This extract an integer located at a specific location in a string"""
+    if not string[location].isdigit():
+        raise Exception
+
+    i = location - 1
+    while i >= 0:
+        if string[i].isdigit():
+            i -= 1
+        else:
+            break
+    left_coord = i + 1
+
+    i = location + 1
+    while i < len(string):
+        if string[i].isdigit():
+            i += 1
+        else:
+            break
+    right_coord = i - 1
+
+    return int(string[left_coord:right_coord + 1])
+
+
+
 def find_all_occurrences(string: str, target: str):
     """This finds all occurrences of target in string, returns a list of the first indices of target"""
     return_list = []
