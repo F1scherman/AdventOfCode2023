@@ -27,6 +27,17 @@ def extract_int_at_location(string: str, location:int):
     return int(string[left_coord:right_coord + 1])
 
 
+def extract_all_ints(string: str):
+    """This extracts all ints from a string and returns an ordered list"""
+    returns = []
+    i = 0
+    while i < len(string):
+        if string[i].isdigit():
+            returns.append(extract_int_at_location(string, i))
+            i += len(str(returns[-1]))
+        else:
+            i += 1
+    return returns
 
 def find_all_occurrences(string: str, target: str):
     """This finds all occurrences of target in string, returns a list of the first indices of target"""
