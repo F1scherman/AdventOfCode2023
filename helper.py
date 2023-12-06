@@ -1,5 +1,5 @@
 def extract_int(string: str):
-    """This extracts an integer from a string. Functionality breaks if multiple valid integers exist"""
+    """This extracts an integer from a string. Functionality breaks if multiple valid integers exist (it combines them all)"""
     return int(''.join(filter(lambda a: a.isdigit(), string)))
 
 
