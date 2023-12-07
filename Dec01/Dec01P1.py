@@ -1,7 +1,7 @@
 # Brayden Jonsson, 2023
 
 file = open("challenge_text.txt", "r")
-sumOfValues = 0
+sum_of_values = 0
 
 for line in file:
     num = 0
@@ -14,7 +14,7 @@ for line in file:
             num += int(line[lastCharIndex])
             break
 
-    sumOfValues += num
-print(sumOfValues)
+    sum_of_values += num
+print(sum_of_values)
 
 file.close()

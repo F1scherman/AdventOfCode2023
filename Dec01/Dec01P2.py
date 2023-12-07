@@ -1,7 +1,7 @@
 # Brayden Jonsson, 2023
 
 file = open("challenge_text.txt", "r")
-sumOfValues = 0
+sum_of_values = 0
 mapNameToNum = {
     "one": 1,
     "two": 2,
@@ -42,8 +42,8 @@ for line in file:
             largestIndex = index
             largestIndexValue = value
 
-    sumOfValues += largestIndexValue + smallestIndexValue * 10
+    sum_of_values += largestIndexValue + smallestIndexValue * 10
 
-print(sumOfValues)
+print(sum_of_values)
 
 file.close()
