@@ -7,7 +7,7 @@ for i in range(9, 1, -1):
     ALL_VALUES.append(str(i))
 
 MAP_VALUE_TO_NUM = {}
-for i in range(14, 0, -1):
+for i in range(13, 0, -1):
     MAP_VALUE_TO_NUM[ALL_VALUES[13-i]] = i
 
 def hand_comparator(hand1_tup:(str, str), hand2_tup:(str, str)):
