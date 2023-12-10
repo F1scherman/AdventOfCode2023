@@ -18,7 +18,7 @@ def neighbors_to_visit(coords: (int, int), neighbors_checking: [str], matrix, pi
     return_neighbors = []
     for neighbor in valid_neighbors:
         if neighbor[2] in pipe_type[matrix[neighbor[1]][neighbor[0]]]:
-            return_neighbors.append((neighbor[0], neighbor[1]))
+            return_neighbors.append(neighbor)
 
     return return_neighbors
 
@@ -31,8 +31,7 @@ pipe_type = {"S": ["up", "down", "left", "right"],
              "L": ["right", "up"],
              "7": ["left", "down"],
              ".": []}
-list_of_vertical_pipes = ["F", "J", "L", "7", "|"]
-list_of_horizontal_pipes = ["F", "J", "L", "7", "-"]
+bent_pipes = ["F", "J", "L", "7"]
 file = open("challenge_text.txt", "r")
 sum_of_values = 0
 
@@ -103,30 +102,58 @@ for y in range(len(matrix)):
 
 # Step 3: Go through the loop, paint any dirt to the left side of the pipes
 # May need to switch side based on input
-current_neighbor = neighbors_to_visit((start_x, start_y), pipe_type[matrix[start_y][start_x]], matrix, pipe_type)[-1]
+starting_neighbors = neighbors_to_visit((start_x, start_y), pipe_type[matrix[start_y][start_x]], matrix, pipe_type)
+starting_neighbor_directions = [neighbor[2] for neighbor in starting_neighbors]
+
+if ("up" in starting_neighbor_directions and "down" in starting_neighbor_directions) or ("left" in starting_neighbor_directions and "right" in starting_neighbor_directions):
+    pass
+else:
+    bent_pipes.append("S")
+
+current_neighbor = starting_neighbors[-1]
 
 while current_neighbor != (start_x, start_y):
     match come_from_matrix[current_neighbor[1]][current_neighbor[0]]:
         case "down":
             paint_coords = (current_neighbor[0] - 1, current_neighbor[1])
-            if paint_coords[0] < len(matrix[0]) and matrix[paint_coords[1]][paint_coords[0]] == ".":
+            if matrix[paint_coords[1]][paint_coords[0]] == ".":
                 matrix[paint_coords[1]][paint_coords[0]] = "#"
             current_neighbor = (current_neighbor[0], current_neighbor[1] + 1)
         case "up":
             paint_coords = (current_neighbor[0] + 1, current_neighbor[1])
-            if paint_coords[0] >= 0 and matrix[paint_coords[1]][paint_coords[0]] == ".":
+            if matrix[paint_coords[1]][paint_coords[0]] == ".":
                 matrix[paint_coords[1]][paint_coords[0]] = "#"
             current_neighbor = (current_neighbor[0], current_neighbor[1] - 1)
         case "left":
             paint_coords = (current_neighbor[0], current_neighbor[1] - 1)
-            if paint_coords[1] >= 0 and matrix[paint_coords[1]][paint_coords[0]] == ".":
+            if matrix[paint_coords[1]][paint_coords[0]] == ".":
                 matrix[paint_coords[1]][paint_coords[0]] = "#"
             current_neighbor = (current_neighbor[0] - 1, current_neighbor[1])
         case "right":
             paint_coords = (current_neighbor[0], current_neighbor[1] + 1)
-            if paint_coords[1] < len(matrix) and matrix[paint_coords[1]][paint_coords[0]] == ".":
+            if matrix[paint_coords[1]][paint_coords[0]] == ".":
                 matrix[paint_coords[1]][paint_coords[0]] = "#"
             current_neighbor = (current_neighbor[0] + 1, current_neighbor[1])
+
+    if matrix[current_neighbor[1]][current_neighbor[0]] in bent_pipes:
+        match (matrix[current_neighbor[1]][current_neighbor[0]], come_from_matrix[current_neighbor[1]][current_neighbor[0]]):
+            case ("7", "left"):
+                paint_coords = (current_neighbor[0] + 1, current_neighbor[1])
+                if matrix[paint_coords[1]][paint_coords[0]] == ".":
+                    matrix[paint_coords[1]][paint_coords[0]] = "#"
+            case ("L", "right"):
+                paint_coords = (current_neighbor[0] - 1, current_neighbor[1])
+                if matrix[paint_coords[1]][paint_coords[0]] == ".":
+                    matrix[paint_coords[1]][paint_coords[0]] = "#"
+            case ("F", "down"):
+                paint_coords = (current_neighbor[0], current_neighbor[1] + 1)
+                if matrix[paint_coords[1]][paint_coords[0]] == ".":
+                    matrix[paint_coords[1]][paint_coords[0]] = "#"
+            case ("J", "up"):
+                paint_coords = (current_neighbor[0], current_neighbor[1] - 1)
+                if matrix[paint_coords[1]][paint_coords[0]] == ".":
+                    matrix[paint_coords[1]][paint_coords[0]] = "#"
+
 
 # Step 4: Now floodfill based on where hashtags currently are
 flood_fill_queue = deque()
