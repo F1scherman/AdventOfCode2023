@@ -31,6 +31,8 @@ pipe_type = {"S": ["up", "down", "left", "right"],
              "L": ["right", "up"],
              "7": ["left", "down"],
              ".": []}
+list_of_vertical_pipes = ["F", "J", "L", "7", "|"]
+list_of_horizontal_pipes = ["F", "J", "L", "7", "-"]
 file = open("sample_text4.txt", "r")
 sum_of_values = 0
 
@@ -45,26 +47,21 @@ for y in range(len(matrix)):
     visited_matrix.append([])
     for x in range(len(matrix[y])):
         visited_matrix[y].append(False)
-second_visited_matrix = []
+horizontal_counted_matrix = []
 for y in range(len(matrix)):
-    second_visited_matrix.append([])
+    horizontal_counted_matrix.append([])
     for x in range(len(matrix[y])):
-        second_visited_matrix[y].append(False)
-counted_matrix = []
+        horizontal_counted_matrix[y].append(False)
+vertical_counted_matrix = []
 for y in range(len(matrix)):
-    counted_matrix.append([])
+    vertical_counted_matrix.append([])
     for x in range(len(matrix[y])):
-        counted_matrix[y].append(False)
+        vertical_counted_matrix[y].append(False)
 distance_matrix = []
 for y in range(len(matrix)):
     distance_matrix.append([])
     for x in range(len(matrix[y])):
         distance_matrix[y].append(-99999999999999999999999999999999)
-come_from_matrix = []
-for y in range(len(matrix)):
-    come_from_matrix.append([])
-    for x in range(len(matrix[y])):
-        come_from_matrix[y].append("nowhere")
 
 for y in range(len(matrix)):
     for x in range(len(matrix[y])):
@@ -91,20 +88,6 @@ while len(queue) != 0:
         distance_matrix[neighbor[1]][neighbor[0]] = distance_matrix[y][x] + 1
         queue.append((neighbor[0], neighbor[1], x, y))
 
-    x_diff = come_from_x - x
-    y_diff = come_from_y - y
-
-    if x_diff == 0:
-        if y_diff == -1:
-            come_from_matrix[y][x] = "up"
-        else:
-            come_from_matrix[y][x] = "down"
-    else:
-        if x_diff == -1:
-            come_from_matrix[y][x] = "left"
-        else:
-            come_from_matrix[y][x] = "right"
-
 for y in range(len(matrix)):
     for x in range(len(matrix[y])):
         if matrix[y][x] == "S":
@@ -112,83 +95,59 @@ for y in range(len(matrix)):
     if matrix[y][x] == "S":
         break
 
-neighbor_to_flip = neighbors_to_visit((x,y), pipe_type[matrix[y][x]], matrix, pipe_type)[0]
+neighbors = neighbors_to_visit((x,y), pipe_type[matrix[y][x]], matrix, pipe_type)
 
-match come_from_matrix[neighbor_to_flip[1]][neighbor_to_flip[0]]:
-    case "left":
-        come_from_matrix[neighbor_to_flip[1]][neighbor_to_flip[0]] = "right"
-    case "right":
-        come_from_matrix[neighbor_to_flip[1]][neighbor_to_flip[0]] = "left"
-    case "up":
-        come_from_matrix[neighbor_to_flip[1]][neighbor_to_flip[0]] = "down"
-    case "down":
-        come_from_matrix[neighbor_to_flip[1]][neighbor_to_flip[0]] = "up"
+for neighbor in neighbors:
+    if matrix[neighbor[1]][neighbor[0]] in list_of_vertical_pipes:
+        list_of_vertical_pipes.append("S")
+        break
+
+for neighbor in neighbors:
+    if matrix[neighbor[1]][neighbor[0]] in list_of_horizontal_pipes:
+        list_of_horizontal_pipes.append("S")
+        break
+
+vertical_count = 0
+for y in range(len(matrix)):
+    temp_count = 0
+    temp_addresses = []
+    counting = False
+    for x in range(len(matrix[y])):
+        if matrix[y][x] in list_of_vertical_pipes:
+            counting = not counting
+        if counting and not visited_matrix[y][x]:
+            temp_count += 1
+            vertical_counted_matrix[y][x] = True
+        if not counting:
+            vertical_count += temp_count
+            temp_count = 0
+            for my_x, my_y in temp_addresses:
+                vertical_counted_matrix[my_y][my_x] = True
+            temp_addresses.clear()
+
+horizontal_count = 0
+for x in range(len(matrix[0])):
+    temp_count = 0
+    temp_addresses = []
+    counting = False
+    for y in range(len(matrix)):
+        if matrix[y][x] in list_of_horizontal_pipes:
+            counting = not counting
+        if counting and not visited_matrix[y][x]:
+            temp_count += 1
+            temp_addresses.append((x, y))
+        if not counting:
+            horizontal_count += temp_count
+            temp_count = 0
+            for my_x, my_y in temp_addresses:
+                horizontal_counted_matrix[my_y][my_x] = True
+            temp_addresses.clear()
 
 count = 0
-while not second_visited_matrix[y][x]:
-    second_visited_matrix[y][x] = True
-    if matrix[y][x] in ["_", "|"]:
-        match come_from_matrix[y][x]:
-            case "up":
-                temp_count = 0
-                broke = False
-                for i in range(x + 1, len(matrix[y])):
-                    if visited_matrix[y][i]:
-                        broke = True
-                        break
-                    if not counted_matrix[y][i]:
-                        counted_matrix[y][i] = True
-                        temp_count += 1
-                if broke:
-                    count += temp_count
-            case "down":
-                temp_count = 0
-                broke = False
-                for i in range(x - 1, 0, -1):
-                    if visited_matrix[y][i]:
-                        broke = True
-                        break
-                    if not counted_matrix[y][i]:
-                        counted_matrix[y][i] = True
-                        temp_count += 1
-                if broke:
-                    count += temp_count
-            case "left":
-                temp_count = 0
-                broke = False
-                for i in range(y - 1, 0, -1):
-                    if visited_matrix[i][x]:
-                        broke = True
-                        break
-                    if not counted_matrix[i][x]:
-                        counted_matrix[i][x] = True
-                        temp_count += 1
-                if broke:
-                    count += temp_count
-            case "right":
-                temp_count = 0
-                broke = False
-                for i in range(y + 1, len(matrix)):
-                    if visited_matrix[i][x]:
-                        broke = True
-                        break
-                    if not counted_matrix[i][x]:
-                        counted_matrix[i][x] = True
-                        temp_count += 1
-                if broke:
-                    count += temp_count
-
-    match come_from_matrix[y][x]:
-        case "up":
-            y -= 1
-        case "down":
-            y += 1
-        case "left":
-            x -= 1
-        case "right":
-            x += 1
-
-
+for y in range(len(vertical_counted_matrix)):
+    for x in range(len(vertical_counted_matrix[y])):
+        if vertical_counted_matrix[y][x] and horizontal_counted_matrix[y][x]:
+            count += 1
 
 print(count)
 # 0
