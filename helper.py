@@ -107,7 +107,7 @@ def is_all_equal(arr: list):
     return True
 
 
-def is_all_equal_to(arr: list, standard: int):
+def is_all_equal_to(arr: list, standard):
     for item in arr:
         if item != standard:
             return False
