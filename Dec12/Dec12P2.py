@@ -1,5 +1,6 @@
 # Brayden Jonsson, 2023
 import helper
+from threading import Thread, Lock
 
 
 def validate_list(arr: [str], nums: [int]):
@@ -45,13 +46,8 @@ def count_up(arr: [str]):
             arr[i] = "."
 
 
-file = open("sample_text.txt", "r")
-sum_of_values = 0
-line_counter = 1
-for line in file:
-    print(f"Line Number: {line_counter}")
-    line_counter += 1
-
+def figure_out_permutations(line: str):
+    global sum_lock, sum_of_values
     temp_count = 0
 
     original_nums = helper.extract_all_ints(line)
@@ -111,8 +107,22 @@ for line in file:
             temp_count += 1
         count_up(insert_array)
 
-    print(f"This line's count: {temp_count}")
-    sum_of_values += temp_count
+    with sum_lock:
+        sum_of_values += temp_count
+
+
+file = open("sample_text.txt", "r")
+sum_of_values = 0
+sum_lock = Lock()
+
+threads = []
+for line in file:
+    thread = Thread(target=figure_out_permutations, args=(line,))
+    threads.append(thread)
+    thread.start()
+
+for thread in threads:
+    thread.join()
 
 print(sum_of_values)
 
