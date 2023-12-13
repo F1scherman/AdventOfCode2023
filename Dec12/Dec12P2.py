@@ -9,14 +9,10 @@ def validate_list(arr: [str], nums: [int]):
     counting = arr[0] == "#"
     start_index = 0
     while current_arr_index < len(arr) and current_nums_index < len(nums):
-        if arr[current_arr_index] == "#" and counting:
-            pass
-        elif arr[current_arr_index] != "#" and not counting:
-            pass
-        elif arr[current_arr_index] == "#":
+        if arr[current_arr_index] == "#" and not counting:
             start_index = current_arr_index
             counting = True
-        else:
+        elif arr[current_arr_index] != "#" and counting:
             if current_arr_index - start_index != nums[current_nums_index]:
                 return False
             counting = False
@@ -24,16 +20,12 @@ def validate_list(arr: [str], nums: [int]):
             current_nums_index += 1
         current_arr_index += 1
 
-    if counting:
-        if current_arr_index - start_index != nums[current_nums_index]:
-            return False
-        current_nums_index += 1
-    if current_arr_index != len(arr):
-        for i in arr[current_arr_index:]:
-            if i != ".":
-                return False
-    elif current_nums_index != len(nums):
+    if current_nums_index != len(nums):
         return False
+    elif current_arr_index != len(arr):
+        for i in range(current_arr_index, len(arr)):
+            if arr[i] == "#":
+                return False
     return True
 
 
@@ -46,46 +38,9 @@ def count_up(arr: [str]):
             arr[i] = "."
 
 
-def figure_out_permutations(line: str):
-    global sum_lock, sum_of_values
+def figure_out_permutations(nums: [int], char_array: [str], unconfirmed: [str]):
+    global sum_lock, sum_of_values, thread_counter
     temp_count = 0
-
-    original_nums = helper.extract_all_ints(line)
-    nums = []
-    for i in range(5):
-        for num in original_nums:
-            nums.append(num)
-
-    original_char_array = [char for char in line if char in ["#", "?", "."]]
-    char_array = []
-    for i in range(5):
-        for char in original_char_array:
-            char_array.append(char)
-        if i != 4:
-            char_array.append("?")
-
-    char_array_copy_with_delimiter = char_array.copy()
-    char_array_copy_with_delimiter.append("\n")
-
-    # find the ranges of all question mark values
-    unconfirmed_ranges = []
-    start_value = 0
-    counting = line[0] == "?"
-    for i in range(len(char_array_copy_with_delimiter)):
-        char = char_array_copy_with_delimiter[i]
-        if char == "?" and counting:
-            continue
-        elif char == "?":
-            start_value = i
-            counting = True
-        elif counting:
-            unconfirmed_ranges.append(range(start_value, i))
-            counting = False
-
-    unconfirmed = []
-    for unconfirmed_range in unconfirmed_ranges:
-        for i in unconfirmed_range:
-            unconfirmed.append(i)
 
     insert_array = ["." for i in unconfirmed]
     current_index = 0
@@ -109,18 +64,60 @@ def figure_out_permutations(line: str):
 
     with sum_lock:
         sum_of_values += temp_count
+        print(f"Thread {thread_counter} concluded!")
+        thread_counter += 1
 
 
 file = open("sample_text.txt", "r")
 sum_of_values = 0
 sum_lock = Lock()
+thread_counter = 1
 
 threads = []
 for line in file:
-    thread = Thread(target=figure_out_permutations, args=(line,))
+    nums = helper.extract_all_ints(line)
+    nums = nums * 5
+
+    original_char_array = [char for char in line if char in ["#", "?", "."]]
+
+    char_array = []
+    for i in range(5):
+        for char in original_char_array:
+            char_array.append(char)
+        if i != 4:
+            char_array.append("?")
+        else:
+            char_array.append("\n")
+
+    char_array = [char_array[i] for i in range(len(char_array))
+                  if char_array[i] != "." or (0 < i < len(char_array) - 1 and char_array[i - 1] != ".")]
+
+    # find the ranges of all question mark values
+    unconfirmed_ranges = []
+    start_value = 0
+    counting = line[0] == "?"
+    for i in range(len(char_array)):
+        char = char_array[i]
+        if char == "?" and counting:
+            continue
+        elif char == "?":
+            start_value = i
+            counting = True
+        elif counting:
+            unconfirmed_ranges.append(range(start_value, i))
+            counting = False
+
+    unconfirmed = []
+    for unconfirmed_range in unconfirmed_ranges:
+        for i in unconfirmed_range:
+            unconfirmed.append(i)
+
+    thread = Thread(target=figure_out_permutations, args=(nums, char_array, unconfirmed))
     threads.append(thread)
     thread.start()
 
+
+file.close()
 for thread in threads:
     thread.join()
 
