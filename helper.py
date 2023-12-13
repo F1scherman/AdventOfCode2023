@@ -112,3 +112,22 @@ def is_all_equal_to(arr: list, standard):
         if item != standard:
             return False
     return True
+
+
+def arr_to_int(arr: list, one_bit):
+    """This reads an array as a binary number given the one bits. The first index is the low index. Anything not equal
+    to one is assumed to be zero"""
+    int = 0
+    for i in range(len(arr)):
+        if arr[i] == one_bit:
+            int += 2**i
+
+    return int
+
+
+def make_column_matrix(matrix: [[]]):
+    new_matrix = []
+    for i in range(len(matrix[0])):
+        new_matrix.append([y[i] for y in matrix])
+
+    return new_matrix
