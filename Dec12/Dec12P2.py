@@ -1,126 +1,76 @@
 # Brayden Jonsson, 2023
+
+# Heavily relied on Stefan Todorov's (@coravacav) solution for this one.
+
 import helper
-from threading import Thread, Lock
 
 
-def validate_list(arr: [str], nums: [int]):
-    current_nums_index = 0
-    current_arr_index = 0
-    counting = arr[0] == "#"
-    start_index = 0
-    while current_arr_index < len(arr) and current_nums_index < len(nums):
-        if arr[current_arr_index] == "#" and not counting:
-            start_index = current_arr_index
-            counting = True
-        elif arr[current_arr_index] != "#" and counting:
-            if current_arr_index - start_index != nums[current_nums_index]:
-                return False
-            counting = False
-            start_index = current_arr_index
-            current_nums_index += 1
-        current_arr_index += 1
+def generate_possibilities(field : str, nums : tuple[int], damaged_count: int, cache):
+    if (field, nums, damaged_count) in cache:
+        return cache[(field, nums, damaged_count)]
 
-    if current_nums_index != len(nums):
-        return False
-    elif current_arr_index != len(arr):
-        for i in range(current_arr_index, len(arr)):
-            if arr[i] == "#":
-                return False
-    return True
+    if len(nums) == 0:
+        return 0
 
+    if damaged_count == nums[0]:
+        nums = nums[1:]
+        damaged_count = 256
+        if len(nums) == 0:
+            return 0 if field.find("#") != -1 else 1
 
-def count_up(arr: [str]):
-    for i in range(len(arr)):
-        if arr[i] == ".":
-            arr[i] = "#"
-            break
-        else:
-            arr[i] = "."
+    if len(field) == 0:
+        return 0
+    else:
+        cell = field[0]
 
-
-def figure_out_permutations(nums: [int], char_array: [str], unconfirmed: [str]):
-    global sum_lock, sum_of_values, thread_counter
-    temp_count = 0
-
-    insert_array = ["." for i in unconfirmed]
-    current_index = 0
-    for i in unconfirmed:
-        char_array[i] = insert_array[current_index]
-        current_index += 1
-
-    if validate_list(char_array, nums):
-        temp_count += 1
-
-    count_up(insert_array)
-
-    while not helper.is_all_equal_to(insert_array, "."):
-        current_index = 0
-        for i in unconfirmed:
-            char_array[i] = insert_array[current_index]
-            current_index += 1
-        if validate_list(char_array, nums):
-            temp_count += 1
-        count_up(insert_array)
-
-    with sum_lock:
-        sum_of_values += temp_count
-        print(f"Thread {thread_counter} concluded!")
-        thread_counter += 1
+    match cell:
+        case "#":
+            if damaged_count == 256:
+                return 0
+            else:
+                res = generate_possibilities(field[1:], nums, damaged_count + 1, cache)
+                cache[(field[1:], nums, damaged_count + 1)] = res
+                return res
+        case ".":
+            if 0 < damaged_count < 256:
+                return 0
+            else:
+                res = generate_possibilities(field[1:], nums, 0, cache)
+                cache[(field[1:], nums, 0)] = res
+                return res
+        case "?":
+            if damaged_count == 256:
+                damaged_res = 0
+            else:
+                damaged_res = generate_possibilities(field[1:], nums, damaged_count + 1, cache)
+                cache[(field[1:], nums, damaged_count + 1)] = damaged_res
+            if 0 < damaged_count < 256:
+                operational_res = 0
+            else:
+                operational_res = generate_possibilities(field[1:], nums, 0, cache)
+                cache[(field[1:], nums, 0)] = operational_res
+            return damaged_res + operational_res
+        case _:
+            raise Exception()
 
 
-file = open("sample_text.txt", "r")
+file = open("challenge_text.txt", "r")
+
 sum_of_values = 0
-sum_lock = Lock()
-thread_counter = 1
 
-threads = []
 for line in file:
-    nums = helper.extract_all_ints(line)
-    nums = nums * 5
+    nums = helper.extract_all_ints(line) * 5
+    # has to be a tuple for hashing (mutability probably)
+    nums = tuple(nums)
+    # unstripped field just adds together all 5 repeats with the extra question mark,
+    # field removes repeated duplicates (they are redundant)
+    # and intentionally leaves off the last question mark (not in spec)
+    unstripped_field = ((line.split()[0] + "?") * 5)
+    field = ''.join([unstripped_field[i] for i in range(len(unstripped_field) - 1)
+             if unstripped_field[i] != "." or unstripped_field[i+1] != "."])
 
-    original_char_array = [char for char in line if char in ["#", "?", "."]]
+    cache = {}
 
-    char_array = []
-    for i in range(5):
-        for char in original_char_array:
-            char_array.append(char)
-        if i != 4:
-            char_array.append("?")
-        else:
-            char_array.append("\n")
-
-    char_array = [char_array[i] for i in range(len(char_array))
-                  if char_array[i] != "." or (0 < i < len(char_array) - 1 and char_array[i - 1] != ".")]
-
-    # find the ranges of all question mark values
-    unconfirmed_ranges = []
-    start_value = 0
-    counting = line[0] == "?"
-    for i in range(len(char_array)):
-        char = char_array[i]
-        if char == "?" and counting:
-            continue
-        elif char == "?":
-            start_value = i
-            counting = True
-        elif counting:
-            unconfirmed_ranges.append(range(start_value, i))
-            counting = False
-
-    unconfirmed = []
-    for unconfirmed_range in unconfirmed_ranges:
-        for i in unconfirmed_range:
-            unconfirmed.append(i)
-
-    thread = Thread(target=figure_out_permutations, args=(nums, char_array, unconfirmed))
-    threads.append(thread)
-    thread.start()
-
-
-file.close()
-for thread in threads:
-    thread.join()
+    sum_of_values += generate_possibilities(field, nums, 0, cache)
 
 print(sum_of_values)
-
-file.close()
