@@ -125,9 +125,15 @@ def arr_to_int(arr: list, one_bit):
     return int
 
 
-def make_column_matrix(matrix: [[]]):
+def transpose_matrix(matrix: [[]]):
     new_matrix = []
     for i in range(len(matrix[0])):
         new_matrix.append([y[i] for y in matrix])
 
     return new_matrix
+
+
+def swap(arr: [], i:int, j:int):
+    temp = arr[i]
+    arr[i] = arr[j]
+    arr[j] = temp
