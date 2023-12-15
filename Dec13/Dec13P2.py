@@ -85,7 +85,7 @@ for line in file:
             if char != "\n":
                 row_matrix[-1].append(char)
     else:
-        column_matrix = helper.make_column_matrix(row_matrix)
+        column_matrix = helper.transpose_matrix(row_matrix)
 
         rows = [helper.arr_to_int(row, "#") for row in row_matrix]
         columns = [helper.arr_to_int(column, "#") for column in column_matrix]
